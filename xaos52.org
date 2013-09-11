@@ -1,0 +1,600 @@
+* xaos52's Emacs personalized configuration
+
+Inspired by the [[http://eschulte.me/emacs24-starter-kit/#installation][Emacs Starter Kit]], I set up my configuration file
+using Org-babel. Because my username is xaos52, I can save this as
+xaos52.org in my =~/.emacs.d= directory to have it automatically load.
+You could load it with =(org-babel-load-file "/path/to/file")=,
+changing the path appropriately, but you'll probably want to tweak it
+extensively first. 
+
+** Initialization
+
+Turn off mouse interface early in startup to avoid momentary display
+
+#+begin_src emacs-lisp
+  (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+  (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+  
+  (setq inhibit-startup-message t)
+#+end_src emacs-lisp
+
+#+begin_src emacs-lisp
+  (setq message-log-max 16384)
+  
+  ;; (defconst emacs-start-time (current-time))
+  
+  (unless noninteractive
+    (message "Loading %s..." load-file-name))
+
+#+end_src emacs-lisp
+
+I almost always want to go to the right indentation on the next line.
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "RET") 'newline-and-indent)
+#+end_src emacs-lisp
+
+Split window
+
+#+begin_src emacs-lisp
+  ;; (split-window nil nil 'left)
+#+end_src emacs-lisp
+
+** Disable Caps Lock
+
+bind Caps-Lock to M-x
+http://sachachua.com/wp/2008/08/04/emacs-caps-lock-as-m-x/
+of course, this disables normal Caps-Lock for *all* apps...
+
+#+begin_src emacs-lisp
+  (if (eq window-system 'x)
+      (shell-command "xmodmap -e 'clear Lock' -e 'keycode 66 = F13'"))
+  (global-set-key [f13] 'execute-extended-command)
+#+end_src
+
+F12 -> kill-this-buffer
+
+#+begin_src emacs-lisp
+  (global-set-key [f12]       'kill-this-buffer)
+#+end_src
+
+** Personal information
+
+#+begin_src emacs-lisp
+  (setq user-full-name "Jean-Pierre De Schacht"
+        user-mail-address "jds1307@telenet.be")
+#+end_src
+
+** End of sentence definition
+In my world, sentences end with a single space. This makes
+sentence navigation commands work for me.
+#+begin_src emacs-lisp
+  (setq sentence-end-double-space t)
+#+end_src
+
+** Searching based on the current word
+This lets me search up and down.
+
+#+begin_src emacs-lisp
+(defun xaos-search-word-backward ()
+  "Find the previous occurrence of the current word."
+  (interactive)
+  (let ((cur (point)))
+    (skip-syntax-backward "w_")
+    (goto-char
+     (if (re-search-backward (concat "\\_<" (current-word) "\\_>") nil t)
+	 (match-beginning 0)
+       cur))))
+
+(defun xaos-search-word-forward ()
+  "Find the next occurrence of the current word."
+  (interactive)
+  (let ((cur (point)))
+    (skip-syntax-forward "w_")
+    (goto-char
+     (if (re-search-forward (concat "\\_<" (current-word) "\\_>") nil t)
+	 (match-beginning 0)
+       cur))))
+(global-set-key '[M-up] 'xaos-search-word-backward)
+(global-set-key '[M-down] 'xaos-search-word-forward)
+(defadvice search-for-keyword (around xaos01 activate)
+  "Match in a case-insensitive way."
+  (let ((case-fold-search t))
+    ad-do-it))
+#+end_src
+
+** Tramp customization
+Emacs lets you edit files on remote servers, which is pretty darn
+cool.
+
+#+begin_src emacs-lisp
+  (setq tramp-default-method "sudo")
+#+end_src
+
+From http://lists.gnu.org/archive/html/help-gnu-emacs/2012-01/msg00151.html
+
+#+begin_src emacs-lisp
+  (defun th-find-file-sudo (file)
+    "Opens FILE with root privileges."
+    (interactive "F")
+    (set-buffer (find-file (concat "/sudo::" file))))
+  
+  (defadvice find-file (around th-find-file activate)
+    "Open FILENAME using tramp's sudo method if it's read-only."
+    (if (and (not (file-writable-p (ad-get-arg 0)))
+             (not (file-remote-p (ad-get-arg 0)))
+             (y-or-n-p (concat "File "
+                               (ad-get-arg 0)
+                               " is read-only.  Open it as root? ")))
+        (th-find-file-sudo (ad-get-arg 0))
+      ad-do-it))
+#+end_src
+
+** Ido-mode: Show recent files
+Ido-mode is awesome. Let's make it awesomer. I usually want to go to
+recently-opened files first.
+
+#+begin_src emacs-lisp
+  (ido-mode 1)
+  (setq ido-default-buffer-method 'selected-window)
+  (add-hook 'ido-make-file-list-hook 'ido-sort-mtime)
+  (add-hook 'ido-make-dir-list-hook 'ido-sort-mtime)
+  (defun ido-sort-mtime ()
+    (setq ido-temp-list
+          (sort ido-temp-list 
+                (lambda (a b)
+                  (let ((ta (nth 5 (file-attributes (concat ido-current-directory a))))
+                        (tb (nth 5 (file-attributes (concat ido-current-directory b)))))
+                    (if (= (nth 0 ta) (nth 0 tb))
+                        (> (nth 1 ta) (nth 1 tb))
+                      (> (nth 0 ta) (nth 0 tb)))))))
+    (ido-to-end  ;; move . files to end (again)
+     (delq nil (mapcar
+                (lambda (x) (if (string-equal (substring x 0 1) ".") x))
+                ido-temp-list))))
+
+#+end_src
+** Ido-mode: streaming radio
+
+#+begin_src emacs-lisp
+ (defun radio ()
+   (interactive)
+   (let ((filename
+         (ido-completing-read "which radio?: "
+                              (directory-files
+                               "/home/xaos52/music/streaming/"
+                               nil
+                               "\\.pls$\\|\\.xspf$\\|\\.m3u$"))))
+     (async-shell-command
+      (concat "cvlc /home/xaos52/music/streaming/" filename) "*cvlc*" )
+     (message "chosen: %s" filename)))
+
+#+end_src
+
+** Copying lines without selecting them: slick-cut and slick-copy
+
+From: http://emacs-fu.blogspot.be/2009/11/copying-lines-without-selecting-them.html
+
+When I'm programming, I often need to copy a line. Normally, this
+requires me to first select ('mark') the line I want to copy. That
+does not seem like a big deal, but when I'm in the 'flow' I want to
+avoid any little obstacle that can slow me down.
+
+So, how can I copy the current line without selection? I found a nice
+trick by MacChan on EmacsWiki to accomplish this. It also adds a
+function to kill (cut) the current line (similar to kill-line (C-k),
+but kills the whole line, not just from point (cursor) to the end.
+
+The code below simply embellishes the normal functions with the
+functionality 'if nothing is selected, assume we mean the current
+line'. The key bindings stay the same (M-w, C-w).
+
+To enable this, put the following in your .emacs:
+
+#+begin_src emacs-lisp
+  (defadvice kill-ring-save (before slick-copy activate compile) "When called
+    interactively with no active region, copy a single line instead."
+    (interactive (if mark-active (list (region-beginning) (region-end)) (message
+    "Copied line") (list (line-beginning-position) (line-beginning-position
+    2)))))
+  
+  (defadvice kill-region (before slick-cut activate compile)
+   ;; (defadvice kill-region (before slick-cut activate)
+     "When called interactively with no active region, kill a single line instead."
+     (interactive
+       (if mark-active (list (region-beginning) (region-end))
+         (list (line-beginning-position)
+           (line-beginning-position 2)))))
+#+end_src
+
+It also shows the power of Emacs-Lisp with the defadvice-macro – see
+the fine documentation. Using defadvice, you can 'decorate' any
+function with your own modifications. This great power should be used
+with caution, of course, as to not break other usage that assumes the
+undecorated versions. In this case, that seem unlikely. And note that
+the 'advise' only applies when the functions are called interactively.
+
+** emacs-iedit
+So iedit’s pretty great and all that, but I don’t replace words across
+a whole buffer very often; sure, I hear you say: “just narrow-to-defun
+with C-x n d!” Indeed, narrowing’s great, but this blog is all about
+half-baked, half-inventions and cobbled-together scripts, and this
+post is no exception!
+
+I prefer a workflow that minimizes the use of commands to do routine
+tasks — a fairly common goal for most Emacs hackers. The code below
+aim to do just that: when invoked, it will take the word at point and
+only iedit occurrences in the local defun (Note: don’t forget that
+although defun is Lisp-speak, most modes automatically support
+commands like mark-defun or narrow-to-defun.) If you pass an argument
+to the function, it will iedit all occurrences in the entire buffer.
+
+The iedit author suggest that you bind iedit-mode — the default
+command for entering iedit — to C-; and I agree: it’s rarely used and
+easy to type.
+
+#+begin_src emacs-lisp
+;; (require 'iedit)
+ 
+;; (defun iedit-dwim (arg)
+;;   "Starts iedit but uses \\[narrow-to-defun] to limit its scope."
+;;   (interactive "P")
+;;   (if arg
+;;       (iedit-mode)
+;;     (save-excursion
+;;       (save-restriction
+;;         (widen)
+;;         ;; this function determines the scope of `iedit-start'.
+;;         (narrow-to-defun)
+;;         (if iedit-mode
+;;             (iedit-done)
+;;           ;; `current-word' can of course be replaced by other
+;;           ;; functions.
+;;           (iedit-start (current-word)))))))
+ 
+;; (global-set-key (kbd "C-;") 'iedit-dwim)
+#+end_src
+
+** Define aliases
+
+#+begin_src emacs-lisp
+  (defalias 'ff 'find-file)
+  (defalias 'rs 'replace-string)
+  (defalias 'odp 'org-do-promote)
+  (defalias 'odd 'org-do-demote)
+  (defalias 'ops 'org-promote-subtree)
+  (defalias 'ods 'org-demote-subtree)
+  (defalias 'omsu 'org-move-subtree-up)
+  (defalias 'omsd 'org-move-subtree-down)
+#+end_src
+
+** dired customize
+*** How to delete or copy a directory?
+
+When you press D in dired, Emacs by default will not try to delete a
+non-empty dir. To set it to do so, put the following in your emacs
+init file:
+
+allow dired to be able to delete or copy a whole dir.
+“always” means no asking. “top” means ask once. Any other symbol means ask each and every time for a dir and subdir.
+
+#+begin_src emacs-lisp
+  (setq dired-recursive-copies (quote always))
+  (setq dired-recursive-deletes (quote always))
+#+end_src
+
+*** How to copy from one dired dir to the next dired dir shown in a split window?
+
+Put the following in your emacs init file
+
+#+begin_src emacs-lisp
+  (setq dired-dwim-target t)
+#+end_src
+
+Now, go to dired, then call split-window-vertically, then go to
+another dired dir. Now, when you press C to copy, the other dir in the
+split pane will be default destination. Same for R (rename; move).
+
+*** In a file, how to go to its directory and place cursor on the file name?
+
+Use the command dired-jump 【Ctrl+x Ctrl+j】.
+
+*** How to make dired use the same buffer for viewing directory, instead of spawning many?
+
+In dired, you can press a instead of Enter ↵ to open the dir. This
+way, the previous dir will be automatically closed.
+
+If you want Enter ↵ and ^ (parent dir) to use the same buffer, put the
+following in your emacs init file:
+
+#+begin_src emacs-lisp
+  (add-hook 'dired-mode-hook
+   (lambda ()
+    (define-key dired-mode-map (kbd "<return>")
+      'dired-find-alternate-file) ; was dired-advertised-find-file
+    (define-key dired-mode-map (kbd "^")
+      (lambda () (interactive) (find-alternate-file "..")))
+    ; was dired-up-directory
+   ))
+#+end_src
+
+*** Emacs Dired: Opening Files in External Apps
+
+Here's a simple elisp code that opens the current file or marked dired
+files in external app.
+
+#+begin_src emacs-lisp
+(defun open-in-external-app ()
+  "Open the current file or dired marked files in external app.
+Works in Microsoft Windows, Mac OS X, Linux."
+  (interactive)
+  (let ( doIt
+         (myFileList
+          (cond
+           ((string-equal major-mode "dired-mode") (dired-get-marked-files))
+           (t (list (buffer-file-name))) ) ) )
+
+    (setq doIt (if (<= (length myFileList) 5)
+                   t
+                 (y-or-n-p "Open more than 5 files?") ) )
+    
+    (when doIt
+      (cond
+       ((string-equal system-type "windows-nt")
+        (mapc (lambda (fPath) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" fPath t t)) ) myFileList)
+        )
+       ((string-equal system-type "darwin")
+        (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "open" fPath)) )  myFileList) )
+       ((string-equal system-type "gnu/linux")
+        (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
+#+end_src
+
+** Enable winner-mode
+
+#+begin_src emacs-lisp
+  (winner-mode 1)
+#+end_src
+** Magit
+
+#+begin_src emacs-lisp
+  (require 'magit)
+#+end_src
+** Org mode
+Make the windmove keys work in org mode
+
+#+begin_src emacs-lisp
+  (setq org-replace-disputed-keys t)
+#+end_src
+
+** ack-grep
+#+begin_src emacs-lisp
+;;; dim-ack.el --- Dimitri Fontaine
+;;
+;; http://stackoverflow.com/questions/2322389/ack-does-not-work-when-run-from-grep-find-in-emacs-on-windows
+
+;; (defcustom ack-command (executable-find "ack-grep")
+;;   "Command to use to call ack, e.g. ack-grep under debian"
+;;   :type 'file)
+
+;; (defvar ack-command-line (concat ack-command " --nogroup --nocolor "))
+;; (defvar ack-history nil)
+;; (defvar ack-host-defaults-alist nil)
+
+;; (defun ack ()
+;;   "Like grep, but using ack-command as the default"
+;;   (interactive)
+;;   ; Make sure grep has been initialized
+;;   (if (>= emacs-major-version 22)
+;;       (require 'grep)
+;;     (require 'compile))
+;;   ; Close STDIN to keep ack from going into filter mode
+;;   (let ((null-device (format "< %s" null-device))
+;;         (grep-command ack-command-line)
+;;         (grep-history ack-history)
+;;         (grep-host-defaults-alist ack-host-defaults-alist))
+;;     (call-interactively 'grep)
+;;     (setq ack-history             grep-history
+;;           ack-host-defaults-alist grep-host-defaults-alist)))
+
+;; (provide 'dim-ack)
+#+end_src
+
+** toggle window-split
+#+begin_src emacs-lisp
+(defun toggle-window-split ()
+  (interactive)
+  (if (= (count-windows) 2)
+      (let* ((this-win-buffer (window-buffer))
+             (next-win-buffer (window-buffer (next-window)))
+             (this-win-edges (window-edges (selected-window)))
+             (next-win-edges (window-edges (next-window)))
+             (this-win-2nd (not (and (<= (car this-win-edges)
+                                         (car next-win-edges))
+                                     (<= (cadr this-win-edges)
+                                         (cadr next-win-edges)))))
+             (splitter
+              (if (= (car this-win-edges)
+                     (car (window-edges (next-window))))
+                  'split-window-horizontally
+                'split-window-vertically)))
+        (delete-other-windows)
+        (let ((first-win (selected-window)))
+          (funcall splitter)
+          (if this-win-2nd (other-window 1))
+          (set-window-buffer (selected-window) this-win-buffer)
+          (set-window-buffer (next-window) next-win-buffer)
+          (select-window first-win)
+          (if this-win-2nd (other-window 1))))))
+#+end_src
+
+** transpose windows
+
+#+begin_src emacs-lisp
+ (defun transpose-windows (arg)
+   "Transpose the buffers shown in two windows."
+   (interactive "p")
+   (let ((selector (if (>= arg 0) 'next-window 'previous-window)))
+     (while (/= arg 0)
+       (let ((this-win (window-buffer))
+             (next-win (window-buffer (funcall selector))))
+         (set-window-buffer (selected-window) next-win)
+         (set-window-buffer (funcall selector) this-win)
+         (select-window (funcall selector)))
+       (setq arg (if (plusp arg) (1- arg) (1+ arg))))))
+
+ (define-key ctl-x-4-map (kbd "t") 'transpose-windows)
+#+end_src
+
+** default shell script indentation
+I like 4 column indentation in nested statements:
+
+#+begin_src emacs-lisp
+
+    (defun xaos52-setup-sh-mode ()
+      "My own personal preferences for `sh-mode'.
+
+    This is a custom function that sets up the parameters I usually
+    prefer for `sh-mode'.  It is automatically added to
+    `sh-mode-hook', but is can also be called interactively."
+      (interactive)
+      (setq sh-basic-offset 4
+            sh-indentation 4))
+    (add-hook 'sh-mode-hook 'xaos52-setup-sh-mode)
+
+#+end_src
+
+** CUA mode
+
+#+begin_src emacs-lisp
+;; (cua-mode 1)
+(cua-selection-mode 1)
+#+end_src emacs-lisp
+
+** Save point between sessions
+
+#+begin_src emacs-lisp
+  ;; Save point position between sessions
+  ;; (starter-kit-turn-on-save-place-mode)
+#+end_src emacs-lisp
+
+** Flyspell-mode
+#+BEGIN_SRC lisp
+  (flyspell-mode)
+#+END_SRC
+** column-number-mode
+#+BEGIN_SRC lisp
+  (column-number-mode)
+#+END_SRC
+** isearch functions
+#+BEGIN_SRC lisp
+(defun my-isearch-forward-to-beginning ()
+  "Repeat the forward search and place the point before the
+matched text."
+  (interactive)
+  (isearch-repeat 'forward)
+  (goto-char isearch-other-end))
+
+(defun my-isearch-kill-match ()
+  "Kill the text last matched by isearch."
+  (interactive)
+  (isearch-exit)
+  (kill-region (point) isearch-other-end))
+
+(defun my-isearch-zap-to-match ()
+  "Kill the region between the point of origin of isearch and the
+closest portion of the isearch match string.  The behaviour is
+meant to be analogous to zap-to-char.  The deleted region does
+not include the isearch word.  This is meant to be bound only in
+isearch mode."
+  (interactive)
+  (let* ((isearch-bounds (list isearch-other-end (point)))
+         (ismin (apply 'min isearch-bounds))
+         (ismax (apply 'max isearch-bounds))
+         (beg isearch-opoint))
+    (cond
+     ((< beg ismin)
+      (goto-char ismin)
+      (kill-region beg ismin))
+     ((> beg ismax)
+      (goto-char beg)
+      (kill-region ismax beg))
+     (t
+      (error "Internal error in isearch kill function.")))
+    (isearch-exit)))
+
+(defun my-isearch-exit-other-end ()
+  "Exit isearch, but at the other end of the search string.
+This is useful when followed by an immediate kill."
+  (interactive)
+  (isearch-exit)
+  (goto-char isearch-other-end))
+
+(defun my-isearch-yank-symbol ()
+  "Pull next symbol from buffer into search string."
+  (interactive)
+  (isearch-yank-internal (lambda () (sp-forward-symbol) (point))))
+
+;; keybindings
+(bind-key "<f6>" 'replace-regexp)
+
+(bind-key "C-v" 'my-isearch-forward-to-beginning isearch-mode-map)
+(bind-key "C-2" 'my-isearch-kill-match           isearch-mode-map)
+(bind-key "C-3" 'my-isearch-exit-other-end       isearch-mode-map)
+(bind-key "C-M-w" 'my-isearch-yank-symbol        isearch-mode-map)
+(bind-key "M-z" 'my-isearch-zap-to-match         isearch-mode-map)
+(bind-key "<f2>" 'isearch-occur                  isearch-mode-map)
+
+#+END_SRC lisp
+
+** editing with root privileges
+
+#+BEGIN_SRC emacs-lisp
+    (defun djcb-find-file-as-root ()
+    "Like `ido-find-file, but automatically edit the file with
+  root-privileges (using tramp/sudo), if the file is not writable by
+  user."
+    (interactive)
+    (let ((file (ido-read-file-name "Edit as root: ")))
+      (unless (file-writable-p file)
+        (setq file (concat "/sudo:root@localhost:" file)))
+      (find-file file)))
+  ;; or some other keybinding...
+  (global-set-key (kbd "C-x F") 'djcb-find-file-as-root)
+#+END_SRC
+
+or, as an alternative 
+
+#+BEGIN_SRC emacs-lisp
+  (defcustom find-file-root-prefix "/sudo::"
+  "Tramp root prefix to use.")
+  
+  (defadvice find-file-noselect
+  (before add-root-prefix (filename &optional nowarn rawfile wildcards))
+  "Add tramp prefix to filename"
+  (and (bound-and-true-p root-prefix)
+  (yes-or-no-p "Use root privileges? ")
+  (setq filename (concat root-prefix filename))))
+  
+  (ad-activate 'find-file-noselect)
+  
+  (defun find-file-as-root ()
+  "Find file using root privileges"
+  (interactive)
+  (let ((root-prefix find-file-root-prefix))
+  (call-interactively (if ido-mode 'ido-find-file 'find-file))))
+  
+  (defun find-current-as-root ()
+  "Reopen current file as root"
+  (interactive)
+  (set-visited-file-name (concat find-file-root-prefix (buffer-file-name)))
+  (setq buffer-read-only nil))
+  
+  (global-set-key (kbd "M-s C-x C-f") 'find-file-as-root)
+  (global-set-key (kbd "M-s C-x C-v") 'find-current-as-root)
+#+END_SRC
+** saveplace
+#+BEGIN_SRC emacs-lisp
+  (setq-default save-place t)
+  (setq save-place-file (expand-file-name ".places" user-emacs-directory))
+#+END_SRC
