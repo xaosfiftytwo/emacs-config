@@ -62,8 +62,8 @@ F12 -> kill-this-buffer
 ** Personal information
 
 #+begin_src emacs-lisp
-  (setq user-full-name "Jean-Pierre De Schacht"
-        user-mail-address "jds1307@telenet.be")
+  (setq user-full-name "xaosfiftytwo"
+        user-mail-address "johnpetermcawk@gmail.com")
 #+end_src
 
 ** End of sentence definition
