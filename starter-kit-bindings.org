@@ -10,31 +10,31 @@ Key Bindings.
 ** Map fn to Hyper
 #H+source: fn-to-hyper
 #+begin_src emacs-lisp
-  (setq mac-function-modifier 'hyper)
-  ;; fix page-up and page-down keys
+  ;; (setq mac-function-modifier 'hyper)
+  ;; ;; fix page-up and page-down keys
   
-  (defun sfp-page-down (&optional arg)
-    (interactive "^P")
-    (setq this-command 'next-line)
-    (next-line
-     (- (window-text-height)
-        next-screen-context-lines)))
-  (put 'sfp-page-down 'isearch-scroll t)
-  (put 'sfp-page-down 'CUA 'move)
+  ;; (defun sfp-page-down (&optional arg)
+  ;;   (interactive "^P")
+  ;;   (setq this-command 'next-line)
+  ;;   (next-line
+  ;;    (- (window-text-height)
+  ;;       next-screen-context-lines)))
+  ;; (put 'sfp-page-down 'isearch-scroll t)
+  ;; (put 'sfp-page-down 'CUA 'move)
   
-  (defun sfp-page-up (&optional arg)
-    (interactive "^P")
-    (setq this-command 'previous-line)
-    (previous-line
-     (- (window-text-height)
-        next-screen-context-lines)))
-  (put 'sfp-page-up 'isearch-scroll t)
-  (put 'sfp-page-up 'CUA 'move)
+  ;; (defun sfp-page-up (&optional arg)
+  ;;   (interactive "^P")
+  ;;   (setq this-command 'previous-line)
+  ;;   (previous-line
+  ;;    (- (window-text-height)
+  ;;       next-screen-context-lines)))
+  ;; (put 'sfp-page-up 'isearch-scroll t)
+  ;; (put 'sfp-page-up 'CUA 'move)
   
-  (global-set-key [(H down)] 'scroll-up)
-  (global-set-key [(H up)]   'scroll-down) 
-  (require 'scroll-lock)
-  (setq scroll-preserve-screen-position t)
+  ;; (global-set-key [(H down)] 'scroll-up)
+  ;; (global-set-key [(H up)]   'scroll-down) 
+  ;; (require 'scroll-lock)
+  ;; (setq scroll-preserve-screen-position t)
   
 #+end_src
 
@@ -159,12 +159,12 @@ When windows get out of order, you can rotate them.
 
 ** Start eshell or switch to it if it's active.
 #+begin_src emacs-lisp 
-(global-set-key (kbd "C-x m") 'eshell)
+;; (global-set-key (kbd "C-x m") 'eshell)
 #+end_src
 
 ** Start a new eshell even if one is active.
 #+begin_src emacs-lisp 
-(global-set-key (kbd "C-x M") (lambda () (interactive) (eshell t)))
+;; (global-set-key (kbd "C-x M") (lambda () (interactive) (eshell t)))
 #+end_src
 
 ** Start a regular shell if you prefer that.
@@ -235,7 +235,7 @@ Use a little bit of Mac keys, but not all of them.
                                                                      "*irc.freenode.net*")))
   (global-set-key (kbd "C-c J") 'jabber-send-presence)
   (global-set-key (kbd "C-c M-j") 'jabber-disconnect)
-  (global-set-key (kbd "C-x g") 'magit-status)
+  ;; (global-set-key (kbd "C-x g") 'magit-status)
 #+end_src
 
 ** Activate occur easily inside isearch
@@ -261,8 +261,8 @@ It's to the point now where I almost can't use git without magit.
 - [[http://zagadka.vm.bytemark.co.uk/magit/magit.html][Manual]]
 - [[http://groups.google.com/group/magit/][Mailing list]]
 #+begin_src emacs-lisp
-  (require 'magit)
-  (define-key global-map "\M-\C-g" 'magit-status)
+  ;; (require 'magit)
+  ;; (define-key global-map "\M-\C-g" 'magit-status)
 #+end_src
 
 #+resname:
@@ -282,13 +282,13 @@ Ack is "better than grep" and written in Perl.
 
 #+source: ack
 #+begin_src emacs-lisp
-  (require 'ack-and-a-half)
+  ;; (require 'ack-and-a-half)
   ;; Create shorter aliases
-  (defalias 'ack 'ack-and-a-half)
-  (defalias 'ack-same 'ack-and-a-half-same)
-  (defalias 'ack-find-file 'ack-and-a-half-find-file)
-  (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
-  (define-key global-map "\C-x\C-a" 'ack) 
+  ;; (defalias 'ack 'ack-and-a-half)
+  ;; (defalias 'ack-same 'ack-and-a-half-same)
+  ;; (defalias 'ack-find-file 'ack-and-a-half-find-file)
+  ;; (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
+  ;; (define-key global-map "\C-x\C-a" 'ack) 
 #+end_src
 
 
@@ -394,27 +394,27 @@ Sometimes very useful (but we don't use the core cua keys.)
    Use multiple cursors for search, replace, and text-cleaning tasks. For a demonstration, see http://emacsrocks.com/e13.html
 #+source: multiple-cursors
 #+begin_src emacs-lisp
-  (require 'multiple-cursors)
+  ;; (require 'multiple-cursors)
   ;; When you have an active region that spans multiple lines, the following will add a cursor to each line:
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  ;; (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
   
-  (global-set-key (kbd "C-S-c C-e") 'mc/edit-ends-of-lines)
-  (global-set-key (kbd "C-S-c C-a") 'mc/edit-beginnings-of-lines)
+  ;; (global-set-key (kbd "C-S-c C-e") 'mc/edit-ends-of-lines)
+  ;; (global-set-key (kbd "C-S-c C-a") 'mc/edit-beginnings-of-lines)
   
   ;; When you want to add multiple cursors not based on continuous lines, but based on keywords in the buffer, use:
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+  ;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  ;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  ;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
   
   ;; Rectangular region mode
-  (global-set-key (kbd "H-SPC") 'set-rectangular-region-anchor)
+  ;; (global-set-key (kbd "H-SPC") 'set-rectangular-region-anchor)
   
   ;; Mark more like this
-  (global-set-key (kbd "H-a") 'mc/mark-all-like-this)
-  (global-set-key (kbd "H-p") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "H-n") 'mc/mark-next-like-this)
-  (global-set-key (kbd "H-S-n") 'mc/mark-more-like-this-extended)
-  (global-set-key (kbd "H-S-a") 'mc/mark-all-in-region)
+  ;; (global-set-key (kbd "H-a") 'mc/mark-all-like-this)
+  ;; (global-set-key (kbd "H-p") 'mc/mark-previous-like-this)
+  ;; (global-set-key (kbd "H-n") 'mc/mark-next-like-this)
+  ;; (global-set-key (kbd "H-S-n") 'mc/mark-more-like-this-extended)
+  ;; (global-set-key (kbd "H-S-a") 'mc/mark-all-in-region)
 #+end_src
 
 First mark the word, then add more cursors. To get out of multiple-cursors-mode, press <return> or C-g. The latter will first disable multiple regions before disabling multiple cursors. If you want to insert a newline in multiple-cursors-mode, use C-j.
@@ -424,8 +424,8 @@ First mark the word, then add more cursors. To get out of multiple-cursors-mode,
    scroll bars, and no fringe indicators. Useful in conjunction with running Emacs full-screen.
 #+source: minimal-mode
 #+begin_src emacs-lisp
-  (require 'minimal)
-  (global-set-key (kbd "C-c s") 'minimal-mode)
+;;  (require 'minimal)
+;;  (global-set-key (kbd "C-c s") 'minimal-mode)
 #+end_src
 
 ** Closing

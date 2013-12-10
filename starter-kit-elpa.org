@@ -10,40 +10,40 @@ The following packages will be downloaded and installed.
 
 #+begin_src emacs-lisp
   (defvar starter-kit-packages (list 
-                                'ack-and-a-half
+                                ;; 'ack-and-a-half
                                 'auto-complete
                                 'autopair
                                 'browse-kill-ring
                                 ;; 'cdlatex
-                                'css-mode
+                                ;; 'css-mode
                                 'exec-path-from-shell
                                 'expand-region
-                                'gist
+                                ;; 'gist
                                 'hl-line+
                                 ;; 'idle-highlight
                                 ;; 'inf-ruby
                                 ;; 'latex-pretty-symbols
                                 ;; 'mac-key-mode
-                                'magit
-                                'markdown-mode
+                                ;; 'magit
+                                ;; 'markdown-mode
                                 'maxframe
-                                'multiple-cursors
+                                ;; 'multiple-cursors
                                 'paredit
-                                'python
+                                ;; 'python
                                 'redo+
                                 ;; 'ruby-mode
                                 's
                                 'smex
-                                'solarized-theme
-                                'tango-2-theme
-                                'textmate
+                                ;; 'solarized-theme
+                                ;; 'tango-2-theme
+                                ;; 'textmate
                                 ;; 'typopunct
-                                'yaml-mode
+                                ;; 'yaml-mode
                                 'yasnippet
                                 ;; 'r-autoyas
-                                'zenburn-theme
+                                ;; 'zenburn-theme
                                 ;; 'auctex
-                                'ess
+                                ;; 'ess
                                 )
     "Libraries that should be installed by default.")
 #+end_src

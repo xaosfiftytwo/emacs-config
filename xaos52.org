@@ -8,9 +8,7 @@ changing the path appropriately, but you'll probably want to tweak it
 extensively first. 
 
 ** Initialization
-
 Turn off mouse interface early in startup to avoid momentary display
-
 #+begin_src emacs-lisp
   (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
   (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
@@ -21,28 +19,22 @@ Turn off mouse interface early in startup to avoid momentary display
 
 #+begin_src emacs-lisp
   (setq message-log-max 16384)
-  
-  ;; (defconst emacs-start-time (current-time))
-  
   (unless noninteractive
     (message "Loading %s..." load-file-name))
-
 #+end_src emacs-lisp
 
 I almost always want to go to the right indentation on the next line.
-
 #+begin_src emacs-lisp
   (global-set-key (kbd "RET") 'newline-and-indent)
 #+end_src emacs-lisp
 
 Split window
-
 #+begin_src emacs-lisp
-  ;; (split-window nil nil 'left)
+  ;; (split-window-horizontally -10)
+  ;; (split-window-horizontally 10)
 #+end_src emacs-lisp
 
 ** Disable Caps Lock
-
 bind Caps-Lock to M-x
 http://sachachua.com/wp/2008/08/04/emacs-caps-lock-as-m-x/
 of course, this disables normal Caps-Lock for *all* apps...
@@ -54,16 +46,14 @@ of course, this disables normal Caps-Lock for *all* apps...
 #+end_src
 
 F12 -> kill-this-buffer
-
 #+begin_src emacs-lisp
   (global-set-key [f12]       'kill-this-buffer)
 #+end_src
 
 ** Personal information
-
 #+begin_src emacs-lisp
-  (setq user-full-name "xaosfiftytwo"
-        user-mail-address "johnpetermcawk@gmail.com")
+  (setq user-full-name "Jean-Pierre De Schacht"
+        user-mail-address "jds1307@telenet.be")
 #+end_src
 
 ** End of sentence definition
@@ -107,7 +97,6 @@ This lets me search up and down.
 ** Tramp customization
 Emacs lets you edit files on remote servers, which is pretty darn
 cool.
-
 #+begin_src emacs-lisp
   (setq tramp-default-method "sudo")
 #+end_src
@@ -134,7 +123,6 @@ From http://lists.gnu.org/archive/html/help-gnu-emacs/2012-01/msg00151.html
 ** Ido-mode: Show recent files
 Ido-mode is awesome. Let's make it awesomer. I usually want to go to
 recently-opened files first.
-
 #+begin_src emacs-lisp
   (ido-mode 1)
   (setq ido-default-buffer-method 'selected-window)
@@ -156,7 +144,6 @@ recently-opened files first.
 
 #+end_src
 ** Ido-mode: streaming radio
-
 #+begin_src emacs-lisp
  (defun radio ()
    (interactive)
@@ -169,11 +156,9 @@ recently-opened files first.
      (async-shell-command
       (concat "cvlc /home/xaos52/music/streaming/" filename) "*cvlc*" )
      (message "chosen: %s" filename)))
-
 #+end_src
 
 ** Copying lines without selecting them: slick-cut and slick-copy
-
 From: http://emacs-fu.blogspot.be/2009/11/copying-lines-without-selecting-them.html
 
 When I'm programming, I often need to copy a line. Normally, this
@@ -191,7 +176,6 @@ functionality 'if nothing is selected, assume we mean the current
 line'. The key bindings stay the same (M-w, C-w).
 
 To enable this, put the following in your .emacs:
-
 #+begin_src emacs-lisp
   (defadvice kill-ring-save (before slick-copy activate compile) "When called
     interactively with no active region, copy a single line instead."
@@ -291,13 +275,11 @@ Put the following in your emacs init file
 #+begin_src emacs-lisp
   (setq dired-dwim-target t)
 #+end_src
-
 Now, go to dired, then call split-window-vertically, then go to
 another dired dir. Now, when you press C to copy, the other dir in the
 split pane will be default destination. Same for R (rename; move).
 
 *** In a file, how to go to its directory and place cursor on the file name?
-
 Use the command dired-jump 【Ctrl+x Ctrl+j】.
 
 *** How to make dired use the same buffer for viewing directory, instead of spawning many?
@@ -307,7 +289,6 @@ way, the previous dir will be automatically closed.
 
 If you want Enter ↵ and ^ (parent dir) to use the same buffer, put the
 following in your emacs init file:
-
 #+begin_src emacs-lisp
   (add-hook 'dired-mode-hook
    (lambda ()
@@ -323,7 +304,6 @@ following in your emacs init file:
 
 Here's a simple elisp code that opens the current file or marked dired
 files in external app.
-
 #+begin_src emacs-lisp
 (defun open-in-external-app ()
   "Open the current file or dired marked files in external app.
@@ -351,18 +331,15 @@ Works in Microsoft Windows, Mac OS X, Linux."
 #+end_src
 
 ** Enable winner-mode
-
 #+begin_src emacs-lisp
   (winner-mode 1)
 #+end_src
 ** Magit
-
 #+begin_src emacs-lisp
-  (require 'magit)
+  ;; (require 'magit)
 #+end_src
 ** Org mode
 Make the windmove keys work in org mode
-
 #+begin_src emacs-lisp
   (setq org-replace-disputed-keys t)
 #+end_src
@@ -429,7 +406,6 @@ Make the windmove keys work in org mode
 #+end_src
 
 ** transpose windows
-
 #+begin_src emacs-lisp
  (defun transpose-windows (arg)
    "Transpose the buffers shown in two windows."
@@ -448,108 +424,102 @@ Make the windmove keys work in org mode
 
 ** default shell script indentation
 I like 4 column indentation in nested statements:
-
 #+begin_src emacs-lisp
-
-    (defun xaos52-setup-sh-mode ()
-      "My own personal preferences for `sh-mode'.
-
-    This is a custom function that sets up the parameters I usually
-    prefer for `sh-mode'.  It is automatically added to
-    `sh-mode-hook', but is can also be called interactively."
-      (interactive)
-      (setq sh-basic-offset 4
-            sh-indentation 4))
-    (add-hook 'sh-mode-hook 'xaos52-setup-sh-mode)
-
+  
+  (defun xaos52-setup-sh-mode ()
+    "My own personal preferences for `sh-mode'.
+  
+  This is a custom function that sets up the parameters I usually
+  prefer for `sh-mode'.  It is automatically added to
+  `sh-mode-hook', but is can also be called interactively."
+    (interactive)
+    (setq sh-basic-offset 4
+          sh-indentation 4))
+  (add-hook 'sh-mode-hook 'xaos52-setup-sh-mode)
+  
 #+end_src
 
 ** CUA mode
-
 #+begin_src emacs-lisp
-;; (cua-mode 1)
-(cua-selection-mode 1)
-#+end_src emacs-lisp
-
-** Save point between sessions
-
-#+begin_src emacs-lisp
-  ;; Save point position between sessions
-  ;; (starter-kit-turn-on-save-place-mode)
-#+end_src emacs-lisp
+  ;; (cua-mode 1)
+  (cua-selection-mode 1)
+#+end_src
 
 ** Flyspell-mode
-#+BEGIN_SRC lisp
-  (flyspell-mode)
-#+END_SRC
+#+begin_src emacs-lisp
+  ;; disable flyspell-mode
+  ;; (flyspell-mode t)
+#+end_src
+
 ** column-number-mode
-#+BEGIN_SRC lisp
+#+begin_src emacs-lisp
   (column-number-mode)
-#+END_SRC
+#+end_src
+
 ** isearch functions
-#+BEGIN_SRC lisp
-(defun my-isearch-forward-to-beginning ()
-  "Repeat the forward search and place the point before the
-matched text."
-  (interactive)
-  (isearch-repeat 'forward)
-  (goto-char isearch-other-end))
-
-(defun my-isearch-kill-match ()
-  "Kill the text last matched by isearch."
-  (interactive)
-  (isearch-exit)
-  (kill-region (point) isearch-other-end))
-
-(defun my-isearch-zap-to-match ()
-  "Kill the region between the point of origin of isearch and the
-closest portion of the isearch match string.  The behaviour is
-meant to be analogous to zap-to-char.  The deleted region does
-not include the isearch word.  This is meant to be bound only in
-isearch mode."
-  (interactive)
-  (let* ((isearch-bounds (list isearch-other-end (point)))
-         (ismin (apply 'min isearch-bounds))
-         (ismax (apply 'max isearch-bounds))
-         (beg isearch-opoint))
-    (cond
-     ((< beg ismin)
-      (goto-char ismin)
-      (kill-region beg ismin))
-     ((> beg ismax)
-      (goto-char beg)
-      (kill-region ismax beg))
-     (t
-      (error "Internal error in isearch kill function.")))
-    (isearch-exit)))
-
-(defun my-isearch-exit-other-end ()
-  "Exit isearch, but at the other end of the search string.
-This is useful when followed by an immediate kill."
-  (interactive)
-  (isearch-exit)
-  (goto-char isearch-other-end))
-
-(defun my-isearch-yank-symbol ()
-  "Pull next symbol from buffer into search string."
-  (interactive)
-  (isearch-yank-internal (lambda () (sp-forward-symbol) (point))))
-
-;; keybindings
-(bind-key "<f6>" 'replace-regexp)
-
-(bind-key "C-v" 'my-isearch-forward-to-beginning isearch-mode-map)
-(bind-key "C-2" 'my-isearch-kill-match           isearch-mode-map)
-(bind-key "C-3" 'my-isearch-exit-other-end       isearch-mode-map)
-(bind-key "C-M-w" 'my-isearch-yank-symbol        isearch-mode-map)
-(bind-key "M-z" 'my-isearch-zap-to-match         isearch-mode-map)
-(bind-key "<f2>" 'isearch-occur                  isearch-mode-map)
-
-#+END_SRC lisp
-
+#+begin_src emacs-lisp
+  (defun my-isearch-forward-to-beginning ()
+    "Repeat the forward search and place the point before the
+  matched text."
+    (interactive)
+    (isearch-repeat 'forward)
+    (goto-char isearch-other-end))
+  
+  (defun my-isearch-kill-match ()
+    "Kill the text last matched by isearch."
+    (interactive)
+    (isearch-exit)
+    (kill-region (point) isearch-other-end))
+  
+  (defun my-isearch-zap-to-match ()
+    "Kill the region between the point of origin of isearch and the
+  closest portion of the isearch match string.  The behaviour is
+  meant to be analogous to zap-to-char.  The deleted region does
+  not include the isearch word.  This is meant to be bound only in
+  isearch mode."
+    (interactive)
+    (let* ((isearch-bounds (list isearch-other-end (point)))
+           (ismin (apply 'min isearch-bounds))
+           (ismax (apply 'max isearch-bounds))
+           (beg isearch-opoint))
+      (cond
+       ((< beg ismin)
+        (goto-char ismin)
+        (kill-region beg ismin))
+       ((> beg ismax)
+        (goto-char beg)
+        (kill-region ismax beg))
+       (t
+        (error "Internal error in isearch kill function.")))
+      (isearch-exit)))
+  
+  (defun my-isearch-exit-other-end ()
+    "Exit isearch, but at the other end of the search string.
+  This is useful when followed by an immediate kill."
+    (interactive)
+    (isearch-exit)
+    (goto-char isearch-other-end))
+  
+  (defun my-isearch-yank-symbol ()
+    "Pull next symbol from buffer into search string."
+    (interactive)
+    (isearch-yank-internal (lambda () (sp-forward-symbol) (point))))
+  
+  ;; keybindings for isearch-mode
+  (add-hook 'isearch-mode-hook
+            (lambda()
+              (define-key isearch-mode-map (kbd "<f6>") 'replace-regexp)
+              (define-key isearch-mode-map (kbd "C-v") 'my-isearch-forward-to-beginning)
+              (define-key isearch-mode-map (kbd "C-2") 'my-isearch-kill-match)
+              (define-key isearch-mode-map (kbd "C-3") 'my-isearch-exit-other-end)
+              (define-key isearch-mode-map (kbd "C-M-w") 'my-isearch-yank-symbol)
+              (define-key isearch-mode-map (kbd "M-z") 'my-isearch-zap-to-match)
+              (define-key isearch-mode-map (kbd "<f2>") 'isearch-occur)))
+#+end_src
+   
 ** editing with root privileges
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
     (defun djcb-find-file-as-root ()
     "Like `ido-find-file, but automatically edit the file with
   root-privileges (using tramp/sudo), if the file is not writable by
@@ -561,11 +531,10 @@ This is useful when followed by an immediate kill."
       (find-file file)))
   ;; or some other keybinding...
   (global-set-key (kbd "C-x F") 'djcb-find-file-as-root)
-#+END_SRC
+#+end_src
 
 or, as an alternative 
-
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (defcustom find-file-root-prefix "/sudo::"
   "Tramp root prefix to use.")
   
@@ -592,9 +561,56 @@ or, as an alternative
   
   (global-set-key (kbd "M-s C-x C-f") 'find-file-as-root)
   (global-set-key (kbd "M-s C-x C-v") 'find-current-as-root)
-#+END_SRC
+#+end_src
+
 ** saveplace
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
+  (require 'saveplace)
   (setq-default save-place t)
   (setq save-place-file (expand-file-name ".places" user-emacs-directory))
-#+END_SRC
+#+end_src
+** maximize
+#+begin_src emacs-lisp
+;; (require 'maxframe)
+;; (add-hook 'window-setup-hook 'maximize-frame t)
+;; (defun maximize-wm (&optional f)
+;;        (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+;;                '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
+;;        (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+;;                '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0)))
+;; (maximize-wm)
+#+end_src
+
+** make C-n insert new lines at the end of the buffer
+I recommend adding this to your .emacs, as it makes C-n insert newlines if the point is at the end of the buffer. Useful, as it means you won’t have to reach for the return key to add newlines!
+#+begin_src emacs-lisp
+  (setq next-line-add-newlines t)
+#+end_src
+** smartscan
+smartscan from
+https://github.com/mickeynp/smart-scan
+Activate it using 'smartscan-mode'
+Uses M-n and M-p keybinds
+Extended with M-' to replaced
+Now available in github.
+Local copy at ~/git
+cp smartscan.el ~/.emacs.d/src/ to enable newer version
+current version is 0.2
+#+begin_src emacs-lisp
+  ;; enable M-n and M-p with (smartscan-mode)
+  (require 'smartscan)
+#+end_src
+
+** dired should re-use its buffer
+#+begin_src emacs-lisp
+  ;; dired should reuse its buffer
+  (put 'dired-find-alternate-file 'disabled nil)
+  (fset 'dired-find-file 'dired-find-alternate-file)
+  (fset 'dired-advertised-find-file 'dired-find-alternate-file)
+#+end_src
+
+** Activate C-J for dired-jump
+#+begin_src emacs-lisp
+  ;; Make C-J dired-jump available from the start
+  (require 'dired-x)
+#+end_src

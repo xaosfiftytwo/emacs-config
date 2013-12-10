@@ -136,7 +136,7 @@ ido-mode is like magic pixie dust!
   (set-default 'imenu-auto-rescan t)
   
   (add-hook 'text-mode-hook 'turn-on-auto-fill)
-  (add-hook 'text-mode-hook 'turn-on-flyspell)
+  ;; (add-hook 'text-mode-hook 'turn-on-flyspell)
   
   (defvar starter-kit-coding-hook nil
     "Hook that gets run on activation of any programming mode.")
@@ -173,15 +173,15 @@ it's possible aspell isn't in your path
 - This didn't work at first, possibly because cocoAspell was
   building its dictionary.  Now it seems to work fine.
 #+begin_src emacs-lisp 
-  (setq ispell-program-name "aspell"
-        ispell-dictionary "english"
-        ispell-dictionary-alist
-        (let ((default '("[A-Za-z]" "[^A-Za-z]" "[']" nil
-                         ("-B" "-d" "english" "--dict-dir"
-                          "/Library/Application Support/cocoAspell/aspell6-en-6.0-0")
-                         nil iso-8859-1)))
-          `((nil ,@default)
-            ("english" ,@default))))
+  ;; (setq ispell-program-name "aspell"
+  ;;       ispell-dictionary "english"
+  ;;       ispell-dictionary-alist
+  ;;       (let ((default '("[A-Za-z]" "[^A-Za-z]" "[']" nil
+  ;;                        ("-B" "-d" "english" "--dict-dir"
+  ;;                         "/Library/Application Support/cocoAspell/aspell6-en-6.0-0")
+  ;;                        nil iso-8859-1)))
+  ;;         `((nil ,@default)
+  ;;           ("english" ,@default))))
 #+end_src
 
 ** Hippie expand: at times perhaps too hip
@@ -192,18 +192,21 @@ it's possible aspell isn't in your path
 
 ** Don't clutter up directories with files~
 #+begin_src emacs-lisp
-(setq backup-directory-alist `(("." . ,(expand-file-name
-                                        (concat dotfiles-dir "backups")))))
+  (setq backup-directory-alist `(("." . ,(expand-file-name
+                                          (concat dotfiles-dir "backups")))))
+  
+  ;; Make backups of files, even when they're in version control
+  (setq vc-make-backup-files t)
 #+end_src
 
 ** Associate modes with file extensions
 #+begin_src emacs-lisp
-(add-to-list 'auto-mode-alist '("COMMIT_EDITMSG$" . diff-mode))
-(add-to-list 'auto-mode-alist '("\\.css$" . css-mode))
-(require 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.ya?ml$" . yaml-mode))
-(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
-(add-to-list 'auto-mode-alist '("Rakefile$" . ruby-mode))
+  (add-to-list 'auto-mode-alist '("COMMIT_EDITMSG$" . diff-mode))
+  (add-to-list 'auto-mode-alist '("\\.css$" . css-mode))
+  ;; (require 'yaml-mode)
+  ;; (add-to-list 'auto-mode-alist '("\\.ya?ml$" . yaml-mode))
+  (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
+  (add-to-list 'auto-mode-alist '("Rakefile$" . ruby-mode))
 #+end_src
 
 ** Default to unified diffs
@@ -226,3 +229,4 @@ This is turned off, as the color theme handles it.
        (set-face-foreground 'magit-diff-del "red3")))
 
 #+end_src
+
