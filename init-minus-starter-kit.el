@@ -285,7 +285,8 @@
                          (t dir)))))
          (?r (file . ,(concat user-emacs-directory "starter-kit-registers.org")))
          (?s (file . ,(concat user-emacs-directory "starter-kit.org")))
-         (?t (file . "~/tmp/today"))
+         ;; (?t (file . "~/tmp/today"))
+         (?t (file . "~/"))
          (?x (file . ,(concat user-emacs-directory "xaos52.org")))))
   (set-register (car r) (cadr r)))
 
